@@ -1,10 +1,11 @@
 package ldtp
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
+
+	"encoding/base64"
 
 	"github.com/kolo/xmlrpc"
 )
@@ -15,7 +16,7 @@ type Client struct {
 	rpcClient *xmlrpc.Client
 }
 
-// New creates a Client, provided with a "host:port" string
+// Create creates a Client, provided with a "host:port" string
 func New(hostPort string) *Client {
 	rpcClient, err := xmlrpc.NewClient(fmt.Sprintf("http://%s/RPC2", hostPort), nil)
 	if err != nil {
@@ -37,7 +38,6 @@ func (c *Client) GetWindowList() (res []string, err error) {
 func (c *Client) GetAppList() (res []string, err error) {
 	err = c.rpcClient.Call("getapplist", nil, &res)
 	return
-
 }
 
 // GetObjectList retrieves the list of available objects on a window.
@@ -235,6 +235,52 @@ func (c *Client) ObjTimeout(objTimeout int) (out bool, err error) {
 func (c *Client) GUIExistObject(windowName, objectName string) (out bool, err error) {
 	var res int
 	err = c.rpcClient.Call("guiexist", []interface{}{windowName, objectName}, &res)
+	out = res == 1
+	return
+}
+
+// GUIExistObject returns whether the objectName exists. This replaces
+// the `ldtp` `objectexist` call.
+func (c *Client) LaunchApp(appname string) (out bool, err error) {
+	var res int
+	var args []string
+	err = c.rpcClient.Call("launchapp", []interface{}{appname, args, 5, 1, ""}, &res)
+	out = res == 1
+	return
+}
+
+// Activate window (bring it to front)
+func (c *Client) ActivateWindow(windowName string) error {
+	return c.rpcClient.Call("activatewindow", []interface{}{windowName}, nil)
+}
+
+func (c *Client) ActivateText(windowName string, objectName string) error {
+	return c.rpcClient.Call("activatetext", []interface{}{windowName, objectName}, nil)
+}
+
+func (c *Client) GenerateKeyEvent(characters string) error {
+	return c.rpcClient.Call("generatekeyevent", []interface{}{characters}, nil)
+}
+
+func (c *Client) Wait(seconds int) error {
+	return c.rpcClient.Call("wait", []interface{}{seconds}, nil)
+}
+
+func (c *Client) KeyPress(code string) (err error) {
+	err = c.rpcClient.Call("keypress", []interface{}{code}, nil)
+	return
+}
+
+func (c *Client) EnterString(windowName, objectName string, data string) (out bool, err error) {
+	var res int
+	err = c.rpcClient.Call("enterstring", []interface{}{windowName, objectName, data}, &res)
+	out = res == 1
+	return
+}
+
+func (c *Client) WaitTillGuiExist(windowName, objectName string, timeout int) (out bool, err error) {
+	var res int
+	err = c.rpcClient.Call("waittillguiexist", []interface{}{windowName, objectName, timeout}, &res)
 	out = res == 1
 	return
 }
