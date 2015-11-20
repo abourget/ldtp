@@ -1,6 +1,8 @@
 Go library to interface with LDTP Servers
 =========================================
 
+[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](http://godoc.org/github.com/abourget/ldtp)
+
 This library allows you to pilot LDTP implementations for Windows, Mac
 and Linux through the same endpoints used by
 http://ldtp.freedesktop.org/user-doc/index.html, allowing you to
