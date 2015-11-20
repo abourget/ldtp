@@ -3,6 +3,7 @@ package ldtp
 import (
 	"fmt"
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -87,7 +88,7 @@ func TestBunchOfThings(t *testing.T) {
 
 			continue
 
-			guiExists, err := client.GUIExistObject(window, object)
+			guiExists, err := client.GUIObjectExist(window, object)
 			if err != nil {
 				fmt.Println("      error:", err)
 			}
@@ -110,13 +111,26 @@ func TestBunchOfThings(t *testing.T) {
 	}
 }
 
-func TestSomethingElse(t *testing.T) {
-	// childs, err := client.GetChild("dlgHud", "", "")
-	// objects, _ := client.GetObjectList("dlgHud")
-	// fmt.Println("  objects:", objects)
-	// for _, obj := range objects {
-	// 	txt, err := client.GetTextValue("dlgHud", obj, -1, -1)
-	// 	fmt.Println("  text value:", txt, err)
-	// }
-	// fmt.Println("Mama", err, childs)
+func TestAddExtensionInChrome(t *testing.T) {
+	client := New("localhost:4118")
+
+	//client.GetWindowList()
+
+	windowName := "*Google*Chrome"
+
+	if client.Click(windowName, "btnAddextension") != nil {
+		log.Fatalln("Couldn't click btnAddextension")
+	}
+
+	objects, _ := client.GetObjectList(windowName)
+	fmt.Println("  objects:", objects)
+	for _, obj := range objects {
+		if !strings.Contains(obj, "btnAddextension") {
+			continue
+		}
+		size, err := client.GetObjectSize(windowName, obj)
+		fmt.Println("  label value:", obj, size, err)
+		props, err := client.GetObjectProperties(windowName, obj)
+		fmt.Println("  props:", props, err)
+	}
 }

@@ -1,10 +1,11 @@
 package ldtp
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
+
+	"encoding/base64"
 
 	"github.com/kolo/xmlrpc"
 )
@@ -37,7 +38,6 @@ func (c *Client) GetWindowList() (res []string, err error) {
 func (c *Client) GetAppList() (res []string, err error) {
 	err = c.rpcClient.Call("getapplist", nil, &res)
 	return
-
 }
 
 // GetObjectList retrieves the list of available objects on a window.
@@ -180,6 +180,7 @@ func (c *Client) GetObjectProperties(windowName, objectName string) (map[string]
 	return out, nil
 }
 
+// GetWindowSize retrieves the size of a window, and returns a Size.
 func (c *Client) GetWindowSize(windowName string) (*Size, error) {
 	var res []int
 	err := c.rpcClient.Call("getwindowsize", []interface{}{windowName}, &res)
@@ -193,6 +194,8 @@ func (c *Client) GetWindowSize(windowName string) (*Size, error) {
 	return &Size{res[0], res[1], res[2], res[3]}, nil
 }
 
+// GetObjectSize retrieves a Size object representing the width, height and
+// position of a widget.
 func (c *Client) GetObjectSize(windowName, objectName string) (*Size, error) {
 	var res []int
 	err := c.rpcClient.Call("getobjectsize", []interface{}{windowName, objectName}, &res)
@@ -210,15 +213,25 @@ func (c *Client) GetObjectSize(windowName, objectName string) (*Size, error) {
 func (c *Client) GUIExist(windowName string) (out bool, err error) {
 	var res int
 	err = c.rpcClient.Call("guiexist", []interface{}{windowName}, &res)
-	out = res == 1
+	out = (res == 1)
 	return
 }
+
+// GUIExistObject returns whether the objectName exists. This replaces
+// the `ldtp` `objectexist` call.
+func (c *Client) GUIObjectExist(windowName, objectName string) (out bool, err error) {
+	var res int
+	err = c.rpcClient.Call("guiexist", []interface{}{windowName, objectName}, &res)
+	out = (res == 1)
+	return
+}
+
 
 // GUITimeout sets the global timeout for windows, in seconds.
 func (c *Client) GUITimeout(guiTimeout int) (out bool, err error) {
 	var res int
 	err = c.rpcClient.Call("guitimeout", []interface{}{guiTimeout}, &res)
-	out = res == 1
+	out = (res == 1)
 	return
 }
 
@@ -226,19 +239,51 @@ func (c *Client) GUITimeout(guiTimeout int) (out bool, err error) {
 func (c *Client) ObjTimeout(objTimeout int) (out bool, err error) {
 	var res int
 	err = c.rpcClient.Call("objtimeout", []interface{}{objTimeout}, &res)
-	out = res == 1
+	out = (res == 1)
 	return
 }
 
 // GUIExistObject returns whether the objectName exists. This replaces
 // the `ldtp` `objectexist` call.
-func (c *Client) GUIExistObject(windowName, objectName string) (out bool, err error) {
+func (c *Client) LaunchApp(appname string) (out bool, err error) {
 	var res int
-	err = c.rpcClient.Call("guiexist", []interface{}{windowName, objectName}, &res)
-	out = res == 1
+	err = c.rpcClient.Call("launchapp", []interface{}{appname, []string{}, 5, 1, ""}, &res)
+	out = (res == 1)
 	return
 }
 
-type Size struct {
-	X, Y, Width, Height int
+// Activate window (bring it to front)
+func (c *Client) ActivateWindow(windowName string) error {
+	return c.rpcClient.Call("activatewindow", []interface{}{windowName}, nil)
+}
+
+// ActivateText activates the text in an object.
+func (c *Client) ActivateText(windowName string, objectName string) error {
+	return c.rpcClient.Call("activatetext", []interface{}{windowName, objectName}, nil)
+}
+
+// GenerateKeyEvent sends a series of characters as key events.
+func (c *Client) GenerateKeyEvent(characters string) error {
+	return c.rpcClient.Call("generatekeyevent", []interface{}{characters}, nil)
+}
+
+// KeyPress sends a keyboard press
+func (c *Client) KeyPress(code string) error {
+	return c.rpcClient.Call("keypress", []interface{}{code}, nil)
+}
+
+// EnterString sends a string of data in an object.
+func (c *Client) EnterString(windowName, objectName string, data string) (out bool, err error) {
+	var res int
+	err = c.rpcClient.Call("enterstring", []interface{}{windowName, objectName, data}, &res)
+	out = (res == 1)
+	return
+}
+
+// WaitUntilGUIExist calls `waittillguiexist` and fixes its weird syntax !
+func (c *Client) WaitUntilGUIExist(windowName, objectName string, timeout int) (out bool, err error) {
+	var res int
+	err = c.rpcClient.Call("waittillguiexist", []interface{}{windowName, objectName, timeout}, &res)
+	out = (res == 1)
+	return
 }
