@@ -281,7 +281,14 @@ func (c *Client) EnterString(windowName, objectName string, data string) (out bo
 // WaitUntilGUIExists calls `waittillguiexist` and fixes its weird syntax !
 func (c *Client) WaitUntilGUIExists(windowName, objectName string, timeout int) (out bool, err error) {
 	var res int
-	err = c.rpcClient.Call("waittillguiexist", []interface{}{windowName, objectName, timeout}, &res)
+	err = c.rpcClient.Call("waittillguiexist", []interface{}{windowName, objectName, timeout, ""}, &res)
+	out = (res == 1)
+	return
+}
+
+func (c *Client) WaitUntilGUIInState(windowName, objectName string, timeout int, state LDTPState) (out bool, err error) {
+	var res int
+	err = c.rpcClient.Call("waittillguiexist", []interface{}{windowName, objectName, timeout, state}, &res)
 	out = (res == 1)
 	return
 }
